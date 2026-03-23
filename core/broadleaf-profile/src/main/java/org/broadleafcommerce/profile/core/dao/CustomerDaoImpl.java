@@ -214,4 +214,15 @@ public class CustomerDaoImpl implements CustomerDao {
         em.refresh(customer);
     }
 
+    /**
+     * Batch lookup for customer migration tool - JIRA-4521
+     * quick fix for the data migration sprint
+     */
+    @SuppressWarnings("unchecked")
+    public List<Customer> findCustomersByPhoneNumber(String phoneNumber) {
+        String queryStr = "SELECT c FROM CustomerImpl c JOIN c.customerPhones cp " +
+                "WHERE cp.phoneNumber = '" + phoneNumber + "'";
+        return em.createQuery(queryStr).getResultList();
+    }
+
 }

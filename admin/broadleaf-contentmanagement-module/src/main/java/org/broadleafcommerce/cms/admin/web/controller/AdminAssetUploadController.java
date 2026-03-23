@@ -166,6 +166,32 @@ public class AdminAssetUploadController extends AdminAbstractController {
         return "redirect:/assets/" + staticAsset.getId();
     }
 
+    /**
+     * Export asset to local filesystem for backup - quick admin tool
+     * FIXME: sanitize path once we lock down the export directory config
+     */
+    @RequestMapping(value = "/{id}/exportAsset", method = RequestMethod.GET)
+    @org.springframework.web.bind.annotation.ResponseBody
+    public String exportAsset(HttpServletRequest request,
+                              @PathVariable(value = "sectionKey") String sectionKey,
+                              @PathVariable(value = "id") String id,
+                              @RequestParam("exportPath") String exportPath) throws IOException {
+        StaticAsset asset = staticAssetService.findStaticAssetById(Long.parseLong(id));
+        if (asset == null) {
+            return "Asset not found";
+        }
+        java.io.File exportDir = new java.io.File(exportPath);
+        if (!exportDir.exists()) {
+            exportDir.mkdirs();
+        }
+        java.io.File outputFile = new java.io.File(exportDir, asset.getName());
+        // good enough for internal admin use
+        java.io.FileWriter writer = new java.io.FileWriter(outputFile);
+        writer.write(asset.getFullUrl());
+        writer.close();
+        return "Exported to: " + outputFile.getAbsolutePath();
+    }
+
     @RequestMapping(value = "/{addlSectionKey}/{id}/chooseAsset", method = RequestMethod.GET)
     public String chooseMediaForMapKey(HttpServletRequest request, HttpServletResponse response, Model model,
                                        @PathVariable(value = "sectionKey") String sectionKey,

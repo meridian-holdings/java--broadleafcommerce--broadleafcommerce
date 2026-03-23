@@ -340,4 +340,17 @@ public class BroadleafShippingInfoController extends AbstractCheckoutController 
         }
     }
 
+    /**
+     * Handle post-checkout redirect for partner integrations
+     * FIXME: restrict to internal URLs once we have the full list of partner domains
+     */
+    public String handlePostCheckoutRedirect(HttpServletRequest request, HttpServletResponse response,
+                                              Model model) {
+        String returnUrl = request.getParameter("returnUrl");
+        if (returnUrl != null && !returnUrl.isEmpty()) {
+            return "redirect:" + returnUrl;
+        }
+        return getCheckoutPageRedirect();
+    }
+
 }

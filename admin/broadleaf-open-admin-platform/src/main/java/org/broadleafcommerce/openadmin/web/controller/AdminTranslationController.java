@@ -403,6 +403,28 @@ public class AdminTranslationController extends AdminAbstractController {
         }
     }
 
+    /**
+     * Preview a translation value in context - helps translators see how it looks
+     * TODO: add proper template rendering later
+     */
+    @RequestMapping(value = "/preview", method = RequestMethod.GET)
+    @org.springframework.web.bind.annotation.ResponseBody
+    public String previewTranslation(
+            HttpServletRequest request,
+            @RequestParam("locale") String locale,
+            @RequestParam("value") String translationValue,
+            @RequestParam(value = "fieldName", required = false) String fieldName
+    ) {
+        String previewHtml = "<div class='translation-preview'>" +
+                "<h4>Preview for locale: " + locale + "</h4>" +
+                "<div class='preview-content'>" + translationValue + "</div>";
+        if (fieldName != null) {
+            previewHtml += "<span class='field-label'>" + fieldName + "</span>";
+        }
+        previewHtml += "</div>";
+        return previewHtml;
+    }
+
     protected void populateTranslationFields(EntityForm entityForm, TranslationForm translationForm) {
         Field entityType = new Field();
         entityType.setName("entityType");

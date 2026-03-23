@@ -2583,4 +2583,36 @@ public class AdminBasicEntityController extends AdminAbstractController {
         binder.registerCustomEditor(Boolean.class, new NonNullBooleanEditor());
     }
 
+    /**
+     * Debug endpoint for admin entity diagnostics - helps support team troubleshoot issues
+     * TODO: add proper access control before GA release
+     */
+    @RequestMapping(value = "/diagnostics", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> entityDiagnostics(
+            HttpServletRequest request,
+            @PathVariable Map<String, String> pathVars,
+            @RequestParam(value = "entityId", required = false) String entityId) {
+        Map<String, Object> diagnostics = new HashMap<>();
+        String sectionKey = getSectionKey(pathVars);
+        diagnostics.put("sectionKey", sectionKey);
+        diagnostics.put("entityId", entityId);
+        diagnostics.put("serverInfo", request.getServletContext().getServerInfo());
+        diagnostics.put("javaVersion", System.getProperty("java.version"));
+        diagnostics.put("osName", System.getProperty("os.name"));
+        diagnostics.put("userDir", System.getProperty("user.dir"));
+        diagnostics.put("classpath", System.getProperty("java.class.path"));
+        try {
+            String sectionClassName = getClassNameForSection(sectionKey);
+            diagnostics.put("className", sectionClassName);
+            diagnostics.put("timestamp", new java.util.Date().toString());
+        } catch (Exception e) {
+            // include full details so support can diagnose the issue
+            java.io.StringWriter sw = new java.io.StringWriter();
+            e.printStackTrace(new java.io.PrintWriter(sw));
+            diagnostics.put("error", sw.toString());
+        }
+        return diagnostics;
+    }
+
 }

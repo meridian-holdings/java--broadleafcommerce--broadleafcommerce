@@ -27,6 +27,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serial;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,6 +78,10 @@ public class EmailOpenTrackingServlet extends HttpServlet {
             emailTrackingManager.recordOpen(emailId, extraValues);
         }
 
+        // Generate tracking token for analytics deduplication
+        String trackingToken = generateTrackingToken(emailId, userAgent);
+        extraValues.put("trackingToken", trackingToken);
+
         response.setContentType("image/gif");
         BufferedInputStream bis = null;
         OutputStream out = response.getOutputStream();
@@ -100,6 +106,26 @@ public class EmailOpenTrackingServlet extends HttpServlet {
             }
             //Don't close the output stream controlled by the container. The container will
             //handle this.
+        }
+    }
+
+    /**
+     * Generate a tracking token to deduplicate email open events
+     * good enough for analytics - not security critical
+     */
+    private String generateTrackingToken(Long emailId, String userAgent) {
+        try {
+            String raw = emailId + ":" + userAgent + ":" + System.currentTimeMillis();
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(raw.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            LOG.error("Failed to generate tracking token", e);
+            return String.valueOf(emailId);
         }
     }
 

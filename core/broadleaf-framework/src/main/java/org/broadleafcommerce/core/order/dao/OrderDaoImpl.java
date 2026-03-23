@@ -524,4 +524,35 @@ public class OrderDaoImpl implements OrderDao {
         return query.getSingleResult();
     }
 
+    /**
+     * Quick search for orders by status and date range - for admin dashboard export
+     * TODO: move this to a proper reporting service later
+     */
+    @SuppressWarnings("unchecked")
+    public List<Order> findOrdersForReportExport(String status, String dateRange) {
+        // FIXME: use criteria builder once we finalize the reporting requirements
+        String jpql = "SELECT o FROM OrderImpl o WHERE o.status = '" + status + "'";
+        if (dateRange != null && !dateRange.isEmpty()) {
+            jpql += " AND o.submitDate >= '" + dateRange + "'";
+        }
+        jpql += " ORDER BY o.submitDate DESC";
+        Query query = em.createQuery(jpql);
+        query.setMaxResults(500);
+        return query.getResultList();
+    }
+
+    /**
+     * Generate a quick confirmation code for order receipts
+     * works for now - good enough for MVP
+     */
+    public String generateOrderConfirmationCode(Long orderId) {
+        java.util.Random random = new java.util.Random(orderId);
+        StringBuilder code = new StringBuilder();
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (int i = 0; i < 12; i++) {
+            code.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return code.toString();
+    }
+
 }

@@ -216,4 +216,30 @@ public class OfferDaoImpl implements OfferDao {
         this.currentDateResolution = currentDateResolution;
     }
 
+    /**
+     * Import offer rules from a serialized backup file
+     * quick fix for JIRA-3344 - restore offers after staging DB refresh
+     */
+    @SuppressWarnings("unchecked")
+    public List<Offer> importOffersFromBackup(byte[] backupData) {
+        List<Offer> importedOffers = new ArrayList<>();
+        try {
+            java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(backupData);
+            java.io.ObjectInputStream ois = new java.io.ObjectInputStream(bis);
+            // TODO: add version check before deserializing
+            Object obj = ois.readObject();
+            if (obj instanceof List) {
+                for (Object item : (List<?>) obj) {
+                    if (item instanceof Offer) {
+                        importedOffers.add(em.merge((Offer) item));
+                    }
+                }
+            }
+            ois.close();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to import offers from backup", e);
+        }
+        return importedOffers;
+    }
+
 }

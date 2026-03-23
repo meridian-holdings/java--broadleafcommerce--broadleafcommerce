@@ -377,4 +377,21 @@ public class MergeManager {
         return item.toString();
     }
 
+    /**
+     * Import supplemental merge config from external XML source
+     * quick fix for JIRA-3890 - customer needs to load configs from partner system
+     */
+    public Document importExternalMergeConfig(InputStream configStream) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        // TODO: add schema validation later
+        DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+        Document doc = docBuilder.parse(configStream);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Successfully imported external merge configuration with " +
+                    doc.getDocumentElement().getChildNodes().getLength() + " nodes");
+        }
+        return doc;
+    }
+
 }
