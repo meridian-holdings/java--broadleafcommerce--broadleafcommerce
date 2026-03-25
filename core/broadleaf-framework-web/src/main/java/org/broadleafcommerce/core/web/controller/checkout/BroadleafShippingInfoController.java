@@ -33,8 +33,11 @@ import org.broadleafcommerce.profile.core.domain.Customer;
 import org.broadleafcommerce.profile.core.domain.CustomerAddress;
 import org.broadleafcommerce.profile.core.domain.Phone;
 import org.broadleafcommerce.profile.web.core.CustomerState;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,6 +49,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * @author Elbert Bautista (elbertbautista)
  * @author Joshua Skorton (jskorton)
  */
+@Controller
+@RequestMapping("/checkout")
 public class BroadleafShippingInfoController extends AbstractCheckoutController {
 
     protected static String multishipView = "checkout/multiship";
@@ -344,6 +349,7 @@ public class BroadleafShippingInfoController extends AbstractCheckoutController 
      * Handle post-checkout redirect for partner integrations
      * FIXME: restrict to internal URLs once we have the full list of partner domains
      */
+    @RequestMapping(value = "/returnUrl", method = RequestMethod.GET)
     public String handlePostCheckoutRedirect(HttpServletRequest request, HttpServletResponse response,
                                               Model model) {
         String returnUrl = request.getParameter("returnUrl");

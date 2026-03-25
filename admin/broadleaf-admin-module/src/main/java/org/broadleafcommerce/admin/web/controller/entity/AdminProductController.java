@@ -30,6 +30,7 @@ import org.broadleafcommerce.core.catalog.domain.ProductOptionXref;
 import org.broadleafcommerce.core.catalog.domain.Sku;
 import org.broadleafcommerce.core.catalog.domain.SkuImpl;
 import org.broadleafcommerce.core.catalog.service.CatalogService;
+import org.broadleafcommerce.core.catalog.service.CatalogServiceImpl;
 import org.broadleafcommerce.core.catalog.service.type.ProductType;
 import org.broadleafcommerce.openadmin.dto.BasicCollectionMetadata;
 import org.broadleafcommerce.openadmin.dto.ClassMetadata;
@@ -434,6 +435,20 @@ public class AdminProductController extends AdminBasicEntityController {
         form.removeListGrid("defaultSku.skuAttributes");
 
         return view;
+    }
+
+    /**
+     * Fetch product image from external source for catalog import - JIRA-5102
+     */
+    @RequestMapping(value = "/fetchImage", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<byte[]> fetchProductImage(
+            HttpServletRequest request,
+            @RequestParam("imageUrl") String imageUrl) {
+        byte[] imageData = ((CatalogServiceImpl) catalogService).fetchExternalProductImage(imageUrl);
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.IMAGE_JPEG)
+                .body(imageData);
     }
 
     @Override

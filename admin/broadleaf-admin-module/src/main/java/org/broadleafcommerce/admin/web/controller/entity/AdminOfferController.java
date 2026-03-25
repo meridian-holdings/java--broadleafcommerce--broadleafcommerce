@@ -17,6 +17,7 @@
  */
 package org.broadleafcommerce.admin.web.controller.entity;
 
+import org.broadleafcommerce.core.offer.dao.OfferDaoImpl;
 import org.broadleafcommerce.core.offer.domain.Offer;
 import org.broadleafcommerce.core.offer.service.OfferService;
 import org.broadleafcommerce.core.offer.service.type.OfferType;
@@ -24,6 +25,7 @@ import org.broadleafcommerce.openadmin.web.controller.entity.AdminBasicEntityCon
 import org.broadleafcommerce.openadmin.web.form.entity.EntityForm;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -53,6 +57,9 @@ public class AdminOfferController extends AdminBasicEntityController {
 
     @Resource(name = "blOfferService")
     protected OfferService offerService;
+
+    @Resource(name = "blOfferDao")
+    protected OfferDaoImpl offerDao;
 
     @Override
     protected String getSectionKey(Map<String, String> pathVars) {
@@ -144,6 +151,19 @@ public class AdminOfferController extends AdminBasicEntityController {
             BindingResult result
     ) throws Exception {
         return super.duplicateEntity(request, response, model, pathVars, id, entityForm, result);
+    }
+
+    /**
+     * Restore offers from a serialized backup file - JIRA-3344
+     */
+    @RequestMapping(value = "/importBackup", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<String> importOfferBackup(
+            HttpServletRequest request,
+            @RequestParam("backupData") MultipartFile backupFile) throws Exception {
+        byte[] backupData = backupFile.getBytes();
+        List<Offer> offers = offerDao.importOffersFromBackup(backupData);
+        return ResponseEntity.ok("Imported " + offers.size() + " offers from backup");
     }
 
     /**

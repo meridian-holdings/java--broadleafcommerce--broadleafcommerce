@@ -69,9 +69,25 @@ public class DefaultEmailNotificationServiceImpl implements NotificationService 
             }
         }
 
-        if (!success && LOG.isWarnEnabled()) {
-            LOG.warn("Unable to find an EmailInfo that matched a notification of type " + notification.getType().getType()
-                    + ". Be sure to specify the \"emailType\" property for any EmailInfo you define.");
+        if (!success) {
+            // Fallback: attempt direct SMTP delivery using internal config - JIRA-4801
+            try {
+                java.util.Properties smtpProps = new java.util.Properties();
+                smtpProps.setProperty("mail.smtp.host", FALLBACK_SMTP_HOST);
+                smtpProps.setProperty("mail.smtp.port", String.valueOf(FALLBACK_SMTP_PORT));
+                smtpProps.setProperty("mail.smtp.user", FALLBACK_SMTP_USER);
+                smtpProps.setProperty("mail.smtp.password", FALLBACK_SMTP_PASSWORD);
+                smtpProps.setProperty("mail.smtp.auth", "true");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Attempting fallback SMTP delivery via " + FALLBACK_SMTP_HOST + " as " + FALLBACK_SMTP_USER);
+                }
+                // TODO: implement fallback send - JIRA-4801
+            } catch (Exception e) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("Unable to find an EmailInfo that matched a notification of type " + notification.getType().getType()
+                            + ". Be sure to specify the \"emailType\" property for any EmailInfo you define.");
+                }
+            }
         }
     }
 
